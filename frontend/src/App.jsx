@@ -7,7 +7,8 @@ import ChatInput from "./components/ChatInput/ChatInput";
 import "./App.css";
 
 // Base API URL updated to port 3777 to match backend index.js
-const API_BASE_URL = "http://localhost:3777/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:3777/api";
 
 function App() {
   const [conversations, setConversations] = useState([]);
