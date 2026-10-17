@@ -20,18 +20,41 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// (debug) Log every request so you can see whether it reaches Express
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.originalUrl}`, req.body);
+  next();
+});
+
 // 3. Main API Router
 app.use("/api", mainRouter);
 
+// (new) Unknown routes return 404 instead of falling through silently
+app.use((req, res) => {
+  res
+    .status(404)
+    .json({
+      success: false,
+      message: `Route not found: ${req.method} ${req.originalUrl}`,
+    });
+});
+
 // 4. Centralized Error Handling Middleware (must stay after routes)
 app.use(errorHandler);
+
+// (new) Catch errors that would otherwise disappear
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled Rejection:", reason);
+});
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+});
 
 // 5. Database verification and server initialization
 async function startServer() {
   try {
     console.log("Connecting to database...");
 
-    // Test database connection pool
     const connection = await db.getConnection();
     console.log("Database connected successfully!");
 
@@ -39,17 +62,15 @@ async function startServer() {
       console.log(`Connected to host: ${connection.config.host}`);
     }
 
-    // Release connection back to the pool
     connection.release();
 
-    // Start Express server after DB connection succeeds
     app.listen(PORT, () => {
       console.log(`Server is running on http://localhost:${PORT}`);
     });
   } catch (error) {
     console.error("Database connection failed!");
     console.error("Error details:", error.message);
-    process.exit(1); // Stop server process if database connection fails
+    process.exit(1);
   }
 }
 

@@ -80,15 +80,14 @@ function App() {
           return [...filtered, ...newMessages];
         });
       }
-    } catch (error) {
-      console.error(
-        "Error posting conversation:",
-        error.response?.data || error.message,
-      );
+    } catch (err) {
+      console.error("Status:", err.response?.status);
+      console.error("Server message:", err.response?.data);
+      console.error("Message:", err.message);
 
       // Extract error message from backend response or provide a fallback
       const errorMessage =
-        error.response?.data?.message ||
+        err.response?.data?.message ||
         "There was an error generating a response from the server.";
 
       // Display error as assistant response in UI
